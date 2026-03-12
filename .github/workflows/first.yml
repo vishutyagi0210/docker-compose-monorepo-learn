@@ -4,7 +4,6 @@ on:
     branches: [ main ]
 
 jobs: 
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +20,7 @@ jobs:
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > ./packages/db/.env
 
-      - name: build and pushing the frontend
+      - name: build and push frontend
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -29,7 +28,7 @@ jobs:
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
           push: true
-          tags: vishu0210/frontend-backend:${{github.sha}}
+          tags: vishu0210/frontend-backend:${{ github.sha }}
       
       - name: build and push http-backend
         uses: docker/build-push-action@v4
@@ -37,7 +36,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile.http-backend
           push: true
-          tags: vishu0210/http-backend:${{github.sha}}
+          tags: vishu0210/http-backend:${{ github.sha }}
 
       - name: build and push ws-backend
         uses: docker/build-push-action@v4
@@ -45,7 +44,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile.ws-backend
           push: true
-          tags: vishu0210/ws-backend:${{github.sha}}
+          tags: vishu0210/ws-backend:${{ github.sha }}
       
       - name: Setup SSH key
         run: |
@@ -54,27 +53,26 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
           
-      - name: Connect and update vm
+      - name: Connect and update VM
         run: |
-          ssh ${{ secrets.VM_USER}}@${{ secrets.VM_IP }} << EOF
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
             sudo apt-get update 
           EOF
-
 
       - name: Transfer files via SCP
         run: |
           scp docker-compose.yml .env-db ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:/home/${{ secrets.VM_USER }}/
-          ssh ${{secrets.VM_USER}}@${{secrets.VM_IP}} << EOF
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
             cd /home/${{ secrets.VM_USER }}
             echo "" >> .env-db
             echo "GIT_SHA=${{ github.sha }}" >> .env-db
           EOF
 
-
       - name: Run Docker Compose
         run: |
-          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << EOF
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
             cd /home/ubuntu
             docker compose down
+            docker compose --env-file .env-db pull
             docker compose --env-file .env-db up -d
           EOF
