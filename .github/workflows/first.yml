@@ -56,7 +56,7 @@ jobs:
       - name: Connect and update VM
         run: |
           ssh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
-            sudo apt-get update 
+            sudo apt update 
           EOF
 
       - name: Transfer files via SCP
