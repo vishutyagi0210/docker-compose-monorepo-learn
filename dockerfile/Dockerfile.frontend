@@ -1,0 +1,24 @@
+FROM oven/bun:1 as builder
+
+WORKDIR /app
+
+# variable 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
+#copy the configration files
+COPY ./packages /app/packages
+COPY ./bun.lock /app/bun.lock
+COPY ./package.json /app/package.json
+COPY ./turbo.json /app/turbo.json
+
+# copy the main app
+COPY ./apps/web /app/apps/web
+
+RUN bun install
+# add this "db:generate": "cd packages/db && bunx prisma generate && cd ../..",
+RUN bun run db:generate 
+RUN DATABASE_URL=${DATABASE_URL}  bun run build
+
+# "start:web": "cd apps/web && bun run start && cd ../..",
+CMD ["bun" , "run" , "start:web"]

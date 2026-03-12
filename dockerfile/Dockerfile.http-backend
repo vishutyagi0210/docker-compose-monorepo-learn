@@ -1,0 +1,15 @@
+FROM oven/bun:1 as builder
+
+WORKDIR /app
+
+COPY ./packages /app/packages
+COPY ./package.json /app/package.json
+COPY ./turbo.json /app/turbo.json
+COPY ./bun.lock /app/bun.lock
+
+COPY ./apps/http-backend /app/apps/http-backend
+
+RUN bun install
+RUN bun run db:generate
+
+CMD ["bun" , "run" , "start:http-backend"]
