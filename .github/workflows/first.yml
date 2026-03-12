@@ -75,4 +75,4 @@ jobs:
             docker compose down
             docker compose --env-file .env-db pull
             docker compose --env-file .env-db up -d
-          EOF
+          EOF 
