@@ -1,7 +1,7 @@
 name: build and run the app
 on: 
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs: 
 
